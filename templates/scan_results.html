@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <div class="page-header">
+        <h2>📊 Scan Results</h2>
+        <p>File: {{ scan.filename }} — 
+           Scanned: {{ scan.scanned_at.strftime('%b %d, %Y %H:%M') }}</p>
+        <p style="color: #e74c3c; font-size: 13px; margin-top: 5px;">
+            ⚠️ Showing top 500 highest-risk events out of {{ scan.total_events }} total records analysed.
+        </p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Total Events</h3>
+            <p class="stat-number">{{ scan.total_events }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>🔴 Flagged Events</h3>
+            <p class="stat-number">{{ scan.flagged_count }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>High Risk</h3>
+            <p class="stat-number">
+                {{ flagged_events | selectattr('risk_category', 'eq', 'HIGH') | list | length }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-box">
+        <input type="text" id="searchInput" 
+               placeholder="Search events..." 
+               onkeyup="filterTable()">
+    </div>
+
+    <!-- Flagged Events Table -->
+    {% if flagged_events %}
+    <table class="scan-table" id="eventsTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Risk Level</th>
+                <th>Anomaly Score</th>
+                <th>What Happened</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in flagged_events %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    {% if event.risk_category == 'HIGH' %}
+                        <span class="badge-danger">🔴 HIGH</span>
+                    {% elif event.risk_category == 'MEDIUM' %}
+                        <span class="badge-warning">🟡 MEDIUM</span>
+                    {% else %}
+                        <span class="badge-success">🟢 LOW</span>
+                    {% endif %}
+                </td>
+                <td>{{ "%.3f"|format(event.anomaly_score) }}</td>
+                <td>{{ event.plain_english[:100] }}...</td>
+                <td>
+                    <a href="{{ url_for('event_detail', event_id=event.id) }}"
+                       class="btn-investigate">
+                        Investigate
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>✅ No suspicious events detected. Your network looks clean!</p>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('dashboard') }}" class="btn-back">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+</div>
+
+<script>
+function filterTable() {
+    var input = document.getElementById("searchInput").value.toLowerCase();
+    var rows = document.querySelectorAll("#eventsTable tbody tr");
+    rows.forEach(function(row) {
+        var text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+</script>
+{% endblock %}

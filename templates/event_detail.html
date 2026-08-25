@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <div class="page-header">
+        <h2>🔍 Event Investigation</h2>
+        <p>Full analysis of this network event</p>
+    </div>
+
+    <!-- Risk Summary -->
+    <div class="event-summary">
+        <div class="risk-display risk-{{ event.risk_category.lower() }}">
+            {% if event.risk_category == 'HIGH' %}
+                🔴 HIGH RISK
+            {% elif event.risk_category == 'MEDIUM' %}
+                🟡 MEDIUM RISK
+            {% else %}
+                🟢 LOW RISK
+            {% endif %}
+        </div>
+        <div class="anomaly-score">
+            Anomaly Score: {{ "%.4f"|format(event.anomaly_score) }}
+        </div>
+    </div>
+
+    <!-- Plain English Explanation -->
+    <div class="event-card">
+        <h3>📋 What Happened</h3>
+        <p>{{ event.plain_english }}</p>
+    </div>
+
+    <!-- SHAP Factors -->
+    {% if top_factors %}
+    <div class="event-card">
+        <h3>🔬 Top Risk Factors</h3>
+        <p class="factors-subtitle">
+            These are the specific features that triggered this alert:
+        </p>
+        <div class="factors-list">
+            {% for factor in top_factors %}
+            <div class="factor-item">
+                <span class="factor-name">{{ factor }}</span>
+                <span class="factor-value factor-high">
+                    ↑ contributes to risk
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- LLM Q&A Section -->
+    <div class="event-card">
+        <h3>💬 Ask AI About This Event</h3>
+        <p class="factors-subtitle">
+            Ask a question and get a plain English explanation.
+        </p>
+        <div class="qa-form">
+            <input type="text" id="questionInput"
+                   placeholder="e.g. Should I be worried about this?"
+                   class="qa-input">
+            <button onclick="askQuestion()" class="btn-primary qa-btn">
+                Ask AI
+            </button>
+        </div>
+        <div id="answerBox" class="answer-box" style="display:none;">
+            <h4>AI Response:</h4>
+            <p id="answerText"></p>
+        </div>
+        <div id="loadingBox" class="loading-box" style="display:none;">
+            <p>🤔 AI is thinking...</p>
+        </div>
+    </div>
+
+    <!-- Previous Q&A -->
+    {% if llm_responses %}
+    <div class="event-card">
+        <h3>📝 Previous Questions</h3>
+        {% for response in llm_responses %}
+        <div class="qa-history">
+            <p class="qa-question">Q: {{ response.question }}</p>
+            <p class="qa-answer">A: {{ response.response }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('scan_results', scan_id=event.scan_id) }}"
+           class="btn-back">
+            ← Back to Scan Results
+        </a>
+    </div>
+
+</div>
+
+<script>
+function askQuestion() {
+    var question = document.getElementById('questionInput').value;
+    if (!question) return;
+
+    document.getElementById('loadingBox').style.display = 'block';
+    document.getElementById('answerBox').style.display = 'none';
+
+    fetch('/ask/{{ event.id }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question: question})
+    })
+    .then(response => response.text())
+    .then(text => JSON.parse(text))
+    .then(data => {
+        document.getElementById('loadingBox').style.display = 'none';
+        document.getElementById('answerBox').style.display = 'block';
+        document.getElementById('answerText').innerText = data.answer || data.error || 'No response received.';
+        document.getElementById('questionInput').value = '';
+    })
+    .catch(error => {
+        document.getElementById('loadingBox').style.display = 'none';
+        alert('Error getting response. Please try again.');
+    });
+}
+</script>
+{% endblock %}

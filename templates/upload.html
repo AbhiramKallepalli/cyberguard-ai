@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="upload-container">
+
+    <h2>Upload Network Log</h2>
+    <p class="upload-subtitle">Upload a CSV file of your home network activity. CyberGuard will scan it for suspicious behavior.</p>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/upload" enctype="multipart/form-data" class="upload-form" onsubmit="disableBtn()">
+        <div class="file-drop-area" onclick="document.getElementById('file-input').click()">
+            <input type="file" name="file" id="file-input" accept=".csv,.txt" required
+                   style="display:none" onchange="updateFilename(this)">
+            <span id="file-chosen">📂 Click to choose a .csv or .txt file</span>
+        </div>
+        <button type="submit" class="btn-primary" id="submitBtn">
+            Upload and Scan
+        </button>
+    </form>
+
+    <div class="upload-info">
+        <p>Expected format: NSL-KDD (41 columns, no header row)</p>
+        <p>Maximum size: 500,000 rows</p>
+    </div>
+
+</div>
+
+<script>
+function updateFilename(input) {
+    const label = document.getElementById('file-chosen');
+    if (input.files && input.files[0]) {
+        label.textContent = '✅ ' + input.files[0].name;
+        label.style.color = '#2ed573';
+    } else {
+        label.textContent = '📂 Click to choose a .csv or .txt file';
+        label.style.color = '#00d4ff';
+    }
+}
+
+function disableBtn() {
+    const btn = document.getElementById('submitBtn');
+    setTimeout(function() {
+        btn.disabled = true;
+        btn.textContent = '⏳ Scanning... please wait (this takes a few minutes)';
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+    }, 100);
+}
+</script>
+
+{% endblock %}
