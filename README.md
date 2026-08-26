@@ -2,10 +2,10 @@
 AI-Powered Home Network Security Monitor for IoT Devices
 
 ## Project Status
-- ✅ V1 Core Features — Complete (Weeks 1-7)
-- 🔄 Week 8 — CSS + JavaScript Polish (In Progress)
-- ⏳ Week 9 — Testing (Upcoming)
-- ⏳ Week 10 — Final Report + Submission (Upcoming)
+- ✅ V1 Core Features - Complete (Weeks 1-7)
+- 🔄 Week 8 - CSS + JavaScript Polish (In Progress)
+- ⏳ Week 9 - Testing (Upcoming)
+- ⏳ Week 10 - Final Report + Submission (Upcoming)
 
 ## What This Project Does
 Detects unusual activity on home networks using an unsupervised 
@@ -13,7 +13,7 @@ Isolation Forest model, explains findings in plain English using SHAP,
 and provides a local LLM assistant (Phi-3 Mini via Ollama) to help 
 non-technical homeowners decide what action to take.
 
-## V1 Features — All Complete
+## V1 Features - All Complete
 - ✅ User login and signup
 - ✅ CSV network log upload with validation
 - ✅ Isolation Forest anomaly detection (NSL-KDD, 125,973 records)
