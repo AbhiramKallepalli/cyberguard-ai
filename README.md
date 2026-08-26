@@ -2,10 +2,10 @@
 AI-Powered Home Network Security Monitor for IoT Devices
 
 ## Project Status
-✅ V1 Core Features — Complete (Weeks 1-7)
-🔄 Week 8 — CSS + JavaScript Polish (In Progress)
-⏳ Week 9 — Testing
-⏳ Week 10 — Final Report + Submission
+- ✅ V1 Core Features — Complete (Weeks 1-7)
+- 🔄 Week 8 — CSS + JavaScript Polish (In Progress)
+- ⏳ Week 9 — Testing (Upcoming)
+- ⏳ Week 10 — Final Report + Submission (Upcoming)
 
 ## What This Project Does
 Detects unusual activity on home networks using an unsupervised 
