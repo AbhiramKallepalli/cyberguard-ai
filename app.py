@@ -169,19 +169,18 @@ def ask_llm(event_id):
         return json.dumps({'error': 'No question provided'}), 400
 
     # Build structured prompt grounded in event data
-    prompt = f"""You are a home network security assistant helping a non-technical homeowner.
+    score = round(float(event.anomaly_score), 4)
+    prompt = f"""You are a home network security assistant helping a non-technical homeowner. Keep your answer to 2-3 sentences maximum. Do not add anything beyond what is asked.
 
-Here is the network event you are explaining:
-- Risk Level: {event.risk_category}
-- Anomaly Score: {event.anomaly_score:.4f} (more negative = more suspicious)
+Here is the network event:
+- Risk Level: {event.risk_category} (HIGH means very suspicious)
+- Anomaly Score: {score} (scores below -0.15 are HIGH risk, below -0.05 are MEDIUM risk)
 - What happened: {event.plain_english}
 - Top contributing factors: {event.top_factors}
 
-The homeowner is asking: {question}
+The homeowner asks: {question}
 
-Give a clear, plain English answer in 2-3 sentences. Do not use technical jargon.
-Reference the specific anomaly score and risk factors above in your answer.
-Suggest one practical action the homeowner can take."""
+Answer in plain English. Reference the risk level and anomaly score. Suggest one action. Stop after 3 sentences."""
 
     # Call Phi-3 Mini via Ollama
     try:
@@ -189,7 +188,12 @@ Suggest one practical action the homeowner can take."""
             model='phi3:mini',
             messages=[{'role': 'user', 'content': prompt}]
         )
-        answer = response['message']['content'].strip()
+        raw = response['message']['content'].strip()
+        # Cut off anything Phi-3 adds after the real answer
+        sentences = raw.split('.')
+        answer = '. '.join(sentences[:3]).strip()
+        if answer and not answer.endswith('.'):
+            answer += '.'
     except Exception as e:
         return json.dumps({'error': f'LLM error: {str(e)}'}), 500
 

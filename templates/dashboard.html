@@ -35,6 +35,14 @@
     </div>
 
     {% if scans %}
+
+    <!-- Chart.js Scan History Chart -->
+    <div class="event-card" style="margin-bottom: 30px;">
+        <h3>📈 Alerts Per Scan</h3>
+        <p class="factors-subtitle">Number of suspicious events detected in each scan</p>
+        <canvas id="scanChart" height="100"></canvas>
+    </div>
+
     <div class="scan-history">
         <h3>Recent Scans</h3>
         <table class="scan-table">
@@ -68,6 +76,69 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Chart.js Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script>
+        const labels = [
+            {% for scan in scans|reverse %}
+                "{{ scan.scanned_at.strftime('%b %d %H:%M') }}",
+            {% endfor %}
+        ];
+
+        const data = [
+            {% for scan in scans|reverse %}
+                {{ scan.flagged_count }},
+            {% endfor %}
+        ];
+
+        const ctx = document.getElementById('scanChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Alerts Found',
+                    data: data,
+                    backgroundColor: '#ff4757',
+                    borderColor: '#ff4757',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' suspicious events';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Alerts'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Scan Date'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
     {% else %}
     <div class="empty-state">
         <p>No scans yet. Upload your first network log to get started!</p>

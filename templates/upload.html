@@ -14,7 +14,7 @@
         {% endif %}
     {% endwith %}
 
-    <form method="POST" action="/upload" enctype="multipart/form-data" class="upload-form" onsubmit="disableBtn()">
+    <form method="POST" action="/upload" enctype="multipart/form-data" class="upload-form" onsubmit="startScan()">
         <div class="file-drop-area" onclick="document.getElementById('file-input').click()">
             <input type="file" name="file" id="file-input" accept=".csv,.txt" required
                    style="display:none" onchange="updateFilename(this)">
@@ -24,6 +24,36 @@
             Upload and Scan
         </button>
     </form>
+
+    <!-- Progress Stages — hidden until scan starts -->
+    <div id="progress-box" style="display:none; margin-top: 20px;">
+        <div class="event-card">
+            <h3>⏳ Scan in Progress</h3>
+            <p class="factors-subtitle">Please do not close this page.</p>
+            <div class="factors-list">
+                <div class="factor-item" id="stage1">
+                    <span class="factor-name">📁 Validating file format</span>
+                    <span id="stage1-status" class="factor-high">⏳ Waiting...</span>
+                </div>
+                <div class="factor-item" id="stage2">
+                    <span class="factor-name">🔧 Preprocessing data</span>
+                    <span id="stage2-status" style="color:#888;">⏳ Waiting...</span>
+                </div>
+                <div class="factor-item" id="stage3">
+                    <span class="factor-name">🤖 Running Isolation Forest model</span>
+                    <span id="stage3-status" style="color:#888;">⏳ Waiting...</span>
+                </div>
+                <div class="factor-item" id="stage4">
+                    <span class="factor-name">🔬 Calculating SHAP values (top 500 events)</span>
+                    <span id="stage4-status" style="color:#888;">⏳ Waiting...</span>
+                </div>
+                <div class="factor-item" id="stage5">
+                    <span class="factor-name">💾 Saving results to database</span>
+                    <span id="stage5-status" style="color:#888;">⏳ Waiting...</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="upload-info">
         <p>Expected format: NSL-KDD (41 columns, no header row)</p>
@@ -44,13 +74,54 @@ function updateFilename(input) {
     }
 }
 
-function disableBtn() {
+function setStage(stageId, text, color) {
+    const el = document.getElementById(stageId);
+    if (el) {
+        el.textContent = text;
+        el.style.color = color;
+    }
+}
+
+function startScan() {
     const btn = document.getElementById('submitBtn');
+
     setTimeout(function() {
         btn.disabled = true;
-        btn.textContent = '⏳ Scanning... please wait (this takes a few minutes)';
+        btn.textContent = '⏳ Scanning...';
         btn.style.opacity = '0.6';
         btn.style.cursor = 'not-allowed';
+
+        // Show the progress box
+        document.getElementById('progress-box').style.display = 'block';
+
+        // Stage 1 — File validation (starts immediately)
+        setStage('stage1-status', '✅ Complete', '#2ed573');
+
+        // Stage 2 — Preprocessing (after 3 seconds)
+        setTimeout(function() {
+            setStage('stage2-status', '✅ Complete', '#2ed573');
+        }, 3000);
+
+        // Stage 3 — Isolation Forest (after 8 seconds)
+        setTimeout(function() {
+            setStage('stage3-status', '🔄 Running...', '#ffa502');
+        }, 8000);
+
+        setTimeout(function() {
+            setStage('stage3-status', '✅ Complete', '#2ed573');
+        }, 20000);
+
+        // Stage 4 — SHAP (after 20 seconds)
+        setTimeout(function() {
+            setStage('stage4-status', '🔄 Running... (this takes 3-5 minutes)', '#ffa502');
+        }, 21000);
+
+        // Stage 5 — Saving (after 4 minutes)
+        setTimeout(function() {
+            setStage('stage4-status', '✅ Complete', '#2ed573');
+            setStage('stage5-status', '🔄 Saving...', '#ffa502');
+        }, 240000);
+
     }, 100);
 }
 </script>

@@ -167,7 +167,7 @@ def run_scan(df):
             "row_index": int(idx),
             "anomaly_score": score,
             "risk_category": risk,
-            "top_factors": ",".join(top_features),
+            "top_factors": ",".join(plain_english_list),
             "plain_english": ". ".join(plain_english_list)
         })
 
