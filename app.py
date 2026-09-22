@@ -6,12 +6,20 @@ from extensions import db, login_manager
 from datetime import datetime
 import os
 import json
+import logging
 import ollama
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cyberguard-secret-key-2026'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cyberguard.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+os.makedirs("outputs", exist_ok=True)
+logging.basicConfig(
+    filename=os.path.join("outputs", "session.log"),
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s"
+)
 
 db.init_app(app)
 login_manager.init_app(app)
@@ -47,6 +55,7 @@ def signup():
         new_user = User(name=name, email=email, password_hash=hashed_password)
         db.session.add(new_user)
         db.session.commit()
+        logging.info(f"New user signed up: {email}")
         flash('Account created! Please log in.')
         return redirect(url_for('login'))
     return render_template('signup.html')
@@ -59,14 +68,17 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
+            logging.info(f"User logged in: {email}")
             return redirect(url_for('dashboard'))
         else:
+            logging.info(f"Failed login attempt: {email}")
             flash('Invalid email or password.')
     return render_template('login.html')
 
 @app.route('/logout')
 @login_required
 def logout():
+    logging.info(f"User logged out: {current_user.email}")
     logout_user()
     return redirect(url_for('login'))
 
@@ -94,6 +106,7 @@ def upload():
     try:
         df, row_count = validate_and_preprocess(file.stream, file.filename)
     except ValueError as e:
+        logging.info(f"Upload rejected: user={current_user.id}, file={file.filename}, reason={str(e)}")
         flash(str(e))
         return redirect(url_for('upload'))
 
@@ -111,6 +124,7 @@ def upload():
     try:
         flagged_events = run_scan(df)
     except Exception as e:
+        logging.error(f"Scan failed: user={current_user.id}, file={file.filename}, error={str(e)}")
         flash(f'Scan failed: {str(e)}')
         return redirect(url_for('upload'))
 
@@ -128,6 +142,8 @@ def upload():
     # Update scan with final counts
     scan.flagged_count = len(flagged_events)
     db.session.commit()
+
+    logging.info(f"Scan completed: user={current_user.id}, file={file.filename}, records={row_count}, flagged={len(flagged_events)}")
 
     flash(f'Scan complete! {len(flagged_events)} suspicious events detected out of {row_count} records.')
     return redirect(url_for('scan_results', scan_id=scan.id))
@@ -195,6 +211,7 @@ Answer in plain English. Reference the risk level and anomaly score. Suggest one
         if answer and not answer.endswith('.'):
             answer += '.'
     except Exception as e:
+        logging.error(f"LLM error: event_id={event_id}, error={str(e)}")
         return json.dumps({'error': f'LLM error: {str(e)}'}), 500
 
     # Save Q&A to database
@@ -205,6 +222,8 @@ Answer in plain English. Reference the risk level and anomaly score. Suggest one
     )
     db.session.add(llm_response)
     db.session.commit()
+
+    logging.info(f"LLM question answered: event_id={event_id}, user={current_user.id}")
 
     return json.dumps({'answer': answer})
 
