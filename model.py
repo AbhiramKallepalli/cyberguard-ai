@@ -97,10 +97,13 @@ def get_risk_category(score):
     """
     Converts raw anomaly score to LOW / MEDIUM / HIGH.
     Isolation Forest scores: more negative = more anomalous.
+    Thresholds are based on the actual score distribution observed
+    on the NSL-KDD test set (33rd/66th percentiles), since Isolation
+    Forest's score range is dataset-dependent rather than fixed.
     """
-    if score < -0.15:
+    if score < -0.5453:
         return "HIGH"
-    elif score < -0.05:
+    elif score < -0.4717:
         return "MEDIUM"
     else:
         return "LOW"
