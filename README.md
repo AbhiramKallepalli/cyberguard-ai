@@ -7,7 +7,7 @@ AI-Powered Home Network Security Monitor for IoT Devices
 - ✅ Week 9 - Testing + Bug Fixes (Complete)
 - ✅ Week 10 - Final Report + Submission (Complete)
 
-**Project complete and submitted — September 2026.**
+**Project complete and submitted - September 2026.**
 
 ## What This Project Does
 Detects unusual activity on home networks using an unsupervised
@@ -26,14 +26,14 @@ non-technical homeowners decide what action to take.
 ## Testing Summary (Week 9)
 - ✅ 16 automated pytest tests, all passing (model, preprocessing, database)
 - ✅ All 6 specification test scenarios executed and documented in `/tests/scenarios`
-  - Scenario 1 (normal traffic): documented limitation — see final report Section 6
+  - Scenario 1 (normal traffic): documented limitation - see final report Section 6
   - Scenario 2 (known attacks): PASS
   - Scenario 3 (unauthenticated access): PASS
   - Scenario 4 (invalid CSV schema): PASS
   - Scenario 5 (LLM Q&A grounding): PASS
   - Scenario 6 (empty CSV): PASS
-- ✅ LLM response quality: 2.8 / 3.0 average across 5 evaluated responses — see `/docs/llm_evaluation.md`
-- ✅ Bug found and fixed during final review: risk category thresholds were miscalibrated against the model's actual score range, causing 100% of events to classify as HIGH risk. Recalibrated using percentile-based thresholds from the real score distribution — see final report Section 4 for full details.
+- ✅ LLM response quality: 2.8 / 3.0 average across 5 evaluated responses - see `/docs/llm_evaluation.md`
+- ✅ Bug found and fixed during final review: risk category thresholds were miscalibrated against the model's actual score range, causing 100% of events to classify as HIGH risk. Recalibrated using percentile-based thresholds from the real score distribution - see final report Section 4 for full details.
 
 ## Tech Stack
 | Component | Technology |
